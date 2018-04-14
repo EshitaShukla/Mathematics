@@ -38,9 +38,9 @@ bg2l=["silver","dimgrey","midnightblue","#3056b3","orange","#d00001","gainsboro"
 fg3l=["dimgrey","dimgrey","midnightblue","#0976b3","orange","#d00001","dimgrey","brown", "grey","brown","black"]
 Pl=["arc","black","blue","aquativo","kroc","radiance","keramik","clearlooks","plastik","kroc","plastik"]
 
-theme="blue"
+theme="aquativo"
 z=2
-p="/Path/to/the/folder/templates"
+p="/Path/to/the/folder/Templates"
 Px=p+"hw"
 P="/home/eshita/Desktop/Eshita/12th/computer/python/GUI/hwplastik.png"
 
