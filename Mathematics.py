@@ -17,6 +17,8 @@ from numpy.linalg import inv
 
 import subprocess
 
+import os
+
 import sys
 
 g=9.806652 # Gravitaional acceleration
@@ -40,9 +42,11 @@ Pl=["arc","black","blue","aquativo","kroc","radiance","keramik","clearlooks","pl
 
 theme="aquativo"
 z=2
-p="/Path/to/the/folder/Templates"
+root_dir_path = os.path.dirname(os.path.realpath(__file__))
+p=str(os.path.join(root_dir_path, "Templates"))
 Px=p+"hw"
-P="/home/eshita/Desktop/Eshita/12th/computer/python/GUI/hwplastik.png"
+# P="/home/eshita/Desktop/Eshita/12th/computer/python/GUI/hwplastik.png"
+P=str(os.path.join(root_dir_path, 'hwplastik.png')) # push your hwplastik.png in the root directory of this project
 
 root1=tkt.ThemedTk()
 root1.get_themes()
@@ -345,7 +349,7 @@ class start(tk.Frame):                     # Home Page
         label = Label(self,text=x,font="cmmi10 50",fg=fg3,bg=bg3)
         label.pack()
 
-        y="""Mthematics is a powerful calculation tool
+        y="""Mathematics is a powerful calculation tool
 
 It is more than just a claculator.
 
@@ -737,7 +741,7 @@ class P6(tk.Frame):                              #Arithmetic Progression
         n_1=StringVar()
         d_1=StringVar()
 
-        l0=Label(self,text="Arithmatic Progression",font="forte 25",fg=fg3,bg=bg3)
+        l0=Label(self,text="Arithmetic Progression",font="forte 25",fg=fg3,bg=bg3)
         l0.grid(columnspan=2)
 
         l1=Label(self,text="first term",font="forte",fg=fg3,bg=bg3)
