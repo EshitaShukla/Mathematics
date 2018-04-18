@@ -5,6 +5,10 @@ from tkinter import ttk
 from tkinter import*
 
 from ttkthemes import themed_tk as tkt
+from tkinter import Canvas
+from tkinter.constants import *
+from PIL import Image, ImageDraw, ImageTk
+
 
 import math
 from math import *
@@ -16,13 +20,14 @@ import numpy as np
 from numpy.linalg import inv
 
 import subprocess
-
+import os
 import sys
 
 g=9.806652 # Gravitaional acceleration
 RadToDeg = 180.0/3.14159
 DegToRad = 3.14159/180.0
 theta=45
+
 
 #Theme chooser
 global P
@@ -33,23 +38,106 @@ fg3="snow"
 fg4="dimgrey"
 
 themel=["arc","black","blue","aquativo","kroc","radiance","keramik","clearlooks","classic","winxpblue","plastik"]
-bg1l=["gainsboro","grey","skyblue","#8313a6","orange","red","gainsboro","linen","dimgray","orange","silver"]
-bg2l=["silver","dimgrey","midnightblue","#3056b3","orange","#d00001","gainsboro","linen","gainsboro","orange","lightgrey"]
-fg3l=["dimgrey","dimgrey","midnightblue","#0976b3","orange","#d00001","dimgrey","brown", "grey","brown","black"]
+bg1l=["#dcdcdc","#808080","#87ceeb","#8313a6","#ffa500","#110000","#dcdcdc","#faf0e6","#696969","#ffa500","#c0c0c0"]
+bg2l=["#c0c0c0","#696969","#191970","#3056b3","#8b4513","#d00001","#dcdcdc","#faf0e6","#dcdcdc","#ffa500","#c0c0c0"]
+fg3l=["#696969","#696969","#191970","#0976b3","#8b4513","#d00001","#696969","#a52a2a", "#808080","#a52a2a","#000000"]
 Pl=["arc","black","blue","aquativo","kroc","radiance","keramik","clearlooks","plastik","kroc","plastik"]
 
-theme="aquativo"
-z=2
-
-root_dir_path = os.path.dirname(os.path.realpath(__file__))
+theme="blue"
+_dir_path = os.path.dirname(os.path.realpath(__file__))
 p=str(os.path.join(root_dir_path, "Templates"))
 
-Px=p+"hw"
+Px=p+"/hw"
 P=str(os.path.join(root_dir_path, 'hwplastik.png'))
+
 
 root1=tkt.ThemedTk()
 root1.get_themes()
 root1.set_theme("aquativo")
+
+basestring = str
+
+def hex2rgb(str_rgb):
+    try:
+        rgb = str_rgb[1:]
+
+        if len(rgb) == 6:
+            r, g, b = rgb[0:2], rgb[2:4], rgb[4:6]
+        elif len(rgb) == 3:
+            r, g, b = rgb[0] * 2, rgb[1] * 2, rgb[2] * 2
+        else:
+            raise ValueError()
+    except:
+        raise ValueError("Invalid value %r provided for rgb color."% str_rgb)
+
+    return tuple(int(v, 16) for v in (r, g, b))
+
+class GradientFrame(Canvas):
+
+    def __init__(self, master, from_color, to_color, width=None, height=None, orient=HORIZONTAL, steps=None, fill=None, **kwargs):
+        Canvas.__init__(self, master,**kwargs)
+        if steps is None:
+            if orient == HORIZONTAL:
+                steps = height
+            else:
+                steps = width
+
+        if isinstance(from_color, basestring):
+            from_color = hex2rgb(from_color)
+
+        if isinstance(to_color, basestring):
+            to_color = hex2rgb(to_color)
+
+        r,g,b = from_color
+        dr = float(to_color[0] - r)/steps
+        dg = float(to_color[1] - g)/steps
+        db = float(to_color[2] - b)/steps
+
+        if orient == HORIZONTAL:
+            if height is None:
+                raise ValueError("height can not be None")
+
+            self.configure(height=height, bd=0, highlightthickness=0, relief='ridge')
+
+            if width is not None:
+                self.configure(width=width)
+
+            img_height = height
+            img_width = self.winfo_screenwidth()
+
+            image = Image.new("RGB", (img_width, img_height), "#FFFFFF")
+            draw = ImageDraw.Draw(image)
+
+            for i in range(steps):
+                r,g,b = r+dr, g+dg, b+db
+                y0 = int(float(img_height * i)/steps)
+                y1 = int(float(img_height * (i+1))/steps)
+
+                draw.rectangle((0, y0, img_width, y1), fill=(int(r),int(g),int(b)))
+        else:
+            if width is None:
+                raise ValueError("width can not be None")
+            self.configure(width=width)
+
+            if height is not None:
+                self.configure(height=height)
+
+            img_height = self.winfo_screenheight()
+            img_width = width
+
+            image = Image.new("RGB", (img_width, img_height), "#FFFFFF")
+            draw = ImageDraw.Draw(image)
+
+            for i in range(steps):
+                r,g,b = r+dr, g+dg, b+db
+                x0 = int(float(img_width * i)/steps)
+                x1 = int(float(img_width * (i+1))/steps)
+
+                draw.rectangle((x0, 0, x1, img_height), fill=(int(r),int(g),int(b)))
+
+        self._gradient_photoimage = ImageTk.PhotoImage(image)
+
+        self.create_image(0, 0, anchor=NW, image=self._gradient_photoimage)
 
 def g(z):
 	root1.set_theme("black")
@@ -118,31 +206,47 @@ class Main(tkt.ThemedTk,tk.Tk):
         self.set_theme(theme)      ##
         photo=PhotoImage(file=P)
 
-        f=Frame(width=500,height=30)
-        f.place(height=50, width=0, x=0, y=0)
-        f.pack(side="bottom",fill="both",expand=True)
+        self.f=Frame(width=500,height=30, bd=0, highlightthickness=0, relief='ridge')
+        self.f.place(height=50, width=0, x=0, y=0)
+        self.f.pack(side="bottom",fill="both",expand=True)
+        self.f.grid_rowconfigure(1)
+        self.f.grid_columnconfigure(1)
+        self.f.config(bg=bg1)
 
-        f.grid_rowconfigure(1)
-        f.grid_columnconfigure(1)
-        f.config(bg=bg1)
+        self.f1=Frame(width=500,height=30, bd=0, highlightthickness=0, relief='ridge')
+        self.f1.place(height=50, width=0, x=0, y=0)
+        self.f1.pack(side="bottom",fill="both",expand=True)
+        self.f1.grid_rowconfigure(1)
+        self.f1.grid_columnconfigure(1)
+        self.f1.config(bg=bg2)
 
-        f1=Frame(width=500,height=30)
-        f1.place(height=50, width=0, x=0, y=0)
-        f1.pack(side="bottom",fill="both",expand=True)
+        self.f2=Frame(width=500,height=30, bd=0, highlightthickness=0, relief='ridge')
+        self.f2.place(height=50, width=0, x=0, y=0)
+        self.f2.pack(side="bottom",fill="both",expand=True)
 
 
-        f1.grid_rowconfigure(1)
-        f1.grid_columnconfigure(1)
-        f1.config(bg=bg2)
+        self.f2.grid_rowconfigure(1)
+        self.f2.grid_columnconfigure(1)
+        self.f2.config(bg=bg2)
 
-        q=ttk.Button(f1,text="Quit",command=lambda:sys.exit())
+        self.x=GradientFrame(self.f, from_color=bg2, to_color=bg1, height=35,fill="both")
+        self.x.pack(fill="both")
+
+        self.y=GradientFrame(self.f2, from_color="#FFFFFF", to_color=bg2, height=35,fill="both")
+        self.y.pack(fill="both")
+
+        # y=GradientFrame(F1, from_color="#FCFCFC", to_color="#000000", height=30).grid()
+        q=ttk.Button(self.f1,text="Quit",command=lambda:sys.exit())
         q.pack()
 
         self.menu=Menu(self,background=fg4,foreground=bg3)
         self.config(menu=self.menu)
-        self.submenu=Menu(self.menu,foreground=bg3,background=fg4)
+        self.submenu=Menu(self.menu,foreground=bg3,background=fg4,activebackground="snow",activeforeground=fg3)
 
-        def g(z):
+        def g(z,f,f1,f2):
+	        f.pack_forget()
+	        f1.pack_forget()
+	        f2.pack_forget()
 	        global theme
 	        global bg1
 	        global bg2
@@ -156,10 +260,32 @@ class Main(tkt.ThemedTk,tk.Tk):
 	        bg3="snow"
 	        fg3="dimgrey"
 	        P=Px+Pl[z]+".png"
+
+	        f=Frame(width=500,height=30, bd=0, highlightthickness=0, relief='ridge')
+	        f.place(height=50, width=0, x=0, y=0)
+	        f.pack(side="bottom",fill="both",expand=True)
+	        f.grid_rowconfigure(1)
+	        f.grid_columnconfigure(1)
 	        f.config(bg=bg1)
-
-
+	        
+	        f1=Frame(width=500,height=30, bd=0, highlightthickness=0, relief='ridge')
+	        f1.place(height=50, width=0, x=0, y=0)
+	        f1.pack(side="bottom",fill="both",expand=True)
+	        f1.grid_rowconfigure(1)
+	        f1.grid_columnconfigure(1)
 	        f1.config(bg=bg2)
+	        f2=Frame(width=500,height=30, bd=0, highlightthickness=0, relief='ridge')
+	        f2.place(height=50, width=0, x=0, y=0)
+	        f2.pack(side="bottom",fill="both",expand=True)
+	        f2.grid_rowconfigure(1)
+	        f2.grid_columnconfigure(1)
+	        f2.config(bg=bg2)
+	        
+	        q=ttk.Button(f1,text="Quit",command=lambda:sys.exit())
+	        q.pack()
+
+
+
 	        print(theme)
 	        self.set_theme(theme)
 	        f.config(bg=bg1)
@@ -168,52 +294,50 @@ class Main(tkt.ThemedTk,tk.Tk):
 	        global constant1
 	        constant1=1
 	        print (constant1)
+	        self.submenu.config(foreground=bg3,background=fg4,activebackground="snow",activeforeground=fg3)
+	        self.submenu2.config(foreground=bg3,background=fg4,activebackground="snow",activeforeground=fg3)
+	        print("pack")
 
+	        self.x=GradientFrame(f, from_color=bg2, to_color=bg1, height=35,fill="both").pack(fill="both")
+	        self.y=GradientFrame(f2, from_color="#FFFfff", to_color=bg2, height=35,fill="both").pack(fill="both")
+	        self.f=f
+	        self.f1=f1
+	        self.f2=f2
 
-        self.submenu2=Menu(self.menu)
+        #Menu
+        self.menu=Menu(self,background=fg4,foreground=bg3)
+        self.config(menu=self.menu)
 
+            ##
+        self.submenu=Menu(self.menu,foreground=bg3,background=fg4,activebackground="snow",activeforeground=fg3)
         self.menu.add_cascade(label="file",menu=self.submenu)
+
+
+        a=self.submenu.add_command(label="developer info",command=lambda:self.show_frame(P01))
+        b=self.submenu.add_command(label="contact us",command=lambda:self.show_frame(P02))
+
+            ##
+        self.submenu2=Menu(self.menu,foreground=bg3,background=fg4,activebackground="snow",activeforeground=fg3)
         self.menu.add_cascade(label="Choose Theme",menu=self.submenu2)
 
-        b1=self.submenu2.add_command(label="     black     ", command=lambda: g(1))
-        b1=self.submenu2.add_command(label="       arc     ", command=lambda: g(0))
-        b1=self.submenu2.add_command(label="   aquativo  ", command=lambda: g(3))
-        b1=self.submenu2.add_command(label="      blue     ", command=lambda: g(2))
-        b1=self.submenu2.add_command(label="      kroc     ", command=lambda: g(4))
-        b1=self.submenu2.add_command(label=" clearlooks  ", command=lambda: g(7))
-        b1=self.submenu2.add_command(label="   radiance ", command=lambda: g(5))
-        b1=self.submenu2.add_command(label="   keramik  ", command=lambda: g(6))
-        b1=self.submenu2.add_command(label="     classic    ", command=lambda: g(8))
-        b1=self.submenu2.add_command(label=" winxpblue ", command=lambda: g(9))
-        b1=self.submenu2.add_command(label="    plastik    ", command=lambda: g(10))
+
+        b1=self.submenu2.add_command(label="     black     ", command=lambda: g(1,self.f,self.f1,self.f2))
+        b1=self.submenu2.add_command(label="       arc     ", command=lambda: g(0,self.f,self.f1,self.f2))
+        b1=self.submenu2.add_command(label="   aquativo  ", command=lambda: g(3,self.f,self.f1,self.f2))
+        b1=self.submenu2.add_command(label="      blue     ", command=lambda: g(2,self.f,self.f1,self.f2))
+        b1=self.submenu2.add_command(label="      kroc     ", command=lambda: g(4,self.f,self.f1,self.f2))
+        b1=self.submenu2.add_command(label=" clearlooks  ", command=lambda: g(7,self.f,self.f1,self.f2))
+        b1=self.submenu2.add_command(label="   radiance ", command=lambda: g(5,self.f,self.f1,self.f2))
+        b1=self.submenu2.add_command(label="   keramik  ", command=lambda: g(6,self.f,self.f1,self.f2))
+        b1=self.submenu2.add_command(label="     classic    ", command=lambda: g(8,self.f,self.f1,self.f2))
+        b1=self.submenu2.add_command(label=" winxpblue ", command=lambda: g(9,self.f,self.f1,self.f2))
+        b1=self.submenu2.add_command(label="    plastik    ", command=lambda: g(10,self.f,self.f1,self.f2))
 
 
         F1=tk.Frame(self)
         F1=tk.Frame(self,width=400,height=450)
         F1.place(height=7000, width=4000, x=100, y=100)
         F1.config()
-
-        a=self.submenu.add_command(label="developer info",command=lambda:print("""
-		****************************************************************************
-		Developer: Eshita Shukla
-		Date of creation: September 24, 2013
-		Last modified: September 17, 2017
-		****************************************************************************
-		"""))
-        b=self.submenu.add_command(label="contact us",command=lambda:print("""
-		****************************************************************************
-	       email: abcd@gmail.com
-	       contact: @#$%^&*!^$
-
-	    ****************************************************************************
-	     """))
-        c=self.submenu.add_command(label="Donate/ Hire",command=lambda:print("""
-	    ***************************************************************************
-	    email:abhbh@gmail.com
-	     contact:  $@#$%^&*!^
-	    ***************************************************************************
-        """))
-
         F1.pack(fill="both",expand=True)
 
         F1.grid_rowconfigure(0,weight=1)
@@ -302,6 +426,12 @@ class Main(tkt.ThemedTk,tk.Tk):
             frame.config(bg=bg3)
             frame.grid(row=0,column=0,sticky="nsew")
 
+        for F in (P01,P02,start1,start):
+            frame=F(F1,self)
+            self.frames[F]=frame
+            frame.config(bg=bg3)
+            frame.grid(row=0,column=0,sticky="nsew")
+
 
         self.show_frame(start1)
 
@@ -316,6 +446,46 @@ class Main(tkt.ThemedTk,tk.Tk):
         frame.tkraise()
 
 print(constant1)
+
+class P01(tk.Frame):                     # Home Page
+
+    def __init__(self,parent,controller):
+        tk.Frame.__init__(self,parent)
+
+        x="""Developer Information"""
+        label = Label(self,text=x,font="cmmi10 50",fg=fg3,bg=bg3)
+        label.pack()
+
+        y="""Developer: Eshita Shukla
+Date of creation: September 24, 2017
+Last modified: March 24, 2018
+
+"""
+        label = Label(self,text=y,font="cmmi 20",fg=fg3,bg=bg3)
+        label.pack()
+
+        b=ttk.Button(self,text="Let's begin!!!",command=lambda:controller.show_frame(P1))
+        b.pack()
+
+class P02(tk.Frame):                     # Home Page
+
+    def __init__(self,parent,controller):
+        tk.Frame.__init__(self,parent)
+
+        x="""Contact Us"""
+        label = Label(self,text=x,font="cmmi10 50",fg=fg3,bg=bg3)
+        label.pack()
+
+        y="""email: abcd@gmail.com
+contact: @#$%^&*!^$
+
+"""
+        label = Label(self,text=y,font="cmmi 20",fg=fg3,bg=bg3)
+        label.pack()
+
+        b=ttk.Button(self,text="Let's begin!!!",command=lambda:controller.show_frame(P1))
+        b.pack()
+
 
 #Home Page
 
