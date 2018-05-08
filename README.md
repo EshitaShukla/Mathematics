@@ -1,6 +1,6 @@
 # Mathematics
 
-Mathematics is a powerful calculation tool.
+Mathematics is a powerful calculation tool, built from scratch.
 It is more than just a claculator.
 
 Plot graphs and trajectories.
